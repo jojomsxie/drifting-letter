@@ -6,7 +6,6 @@
 <title>匿名の漂流郵便箱</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@200;300;400&family=Shippori+Mincho:wght@400;500&display=swap" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <style>
   *{box-sizing:border-box;margin:0;padding:0}
   html,body{height:100%;font-family:'Shippori Mincho',serif;background:#060e1a;}
@@ -86,20 +85,6 @@
 
   .toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(80px);background:rgba(12,30,55,0.96);color:rgba(200,225,255,0.88);font-family:'Noto Serif JP',serif;font-weight:200;font-size:12px;letter-spacing:2px;padding:11px 26px;border-radius:22px;border:1px solid rgba(100,160,220,0.3);transition:transform 0.4s ease;z-index:200;white-space:nowrap;pointer-events:none;}
   .toast.show{transform:translateX(-50%) translateY(0);}
-
-  .config-overlay{position:fixed;top:0;left:0;right:0;bottom:0;z-index:300;background:rgba(6,14,26,0.97);display:flex;align-items:center;justify-content:center;padding:24px;}
-  .config-card{background:linear-gradient(160deg,#0e2240,#0a1628);border:1px solid rgba(100,160,220,0.25);border-radius:14px;padding:32px 28px;max-width:460px;width:100%;}
-  .config-title{font-family:'Noto Serif JP',serif;font-weight:200;font-size:16px;color:rgba(200,225,255,0.85);letter-spacing:4px;margin-bottom:20px;text-align:center;}
-  .config-step{font-family:'Noto Serif JP',serif;font-size:12px;color:rgba(160,190,230,0.7);line-height:2.1;margin-bottom:20px;letter-spacing:1px;}
-  .config-step a{color:rgba(120,180,255,0.85);text-decoration:none;}
-  .config-step code{background:rgba(255,255,255,0.08);padding:1px 5px;border-radius:3px;font-size:11px;color:rgba(200,230,255,0.7);}
-  .config-input{width:100%;background:rgba(255,255,255,0.05);border:1px solid rgba(100,160,220,0.2);border-radius:8px;color:rgba(200,225,255,0.85);font-family:monospace;font-size:13px;padding:10px 14px;margin-bottom:10px;outline:none;transition:border-color 0.2s;}
-  .config-input:focus{border-color:rgba(100,160,220,0.5);}
-  .config-input::placeholder{color:rgba(100,150,200,0.35);}
-  .config-save{width:100%;background:linear-gradient(135deg,#1a4a7a,#0e3060);border:none;border-radius:10px;color:rgba(200,225,255,0.88);font-family:'Noto Serif JP',serif;font-size:13px;letter-spacing:3px;padding:13px;cursor:pointer;margin-top:6px;transition:all 0.3s;}
-  .config-save:hover{background:linear-gradient(135deg,#2a5a8a,#183878);}
-  .config-skip{display:block;text-align:center;margin-top:14px;font-family:'Noto Serif JP',serif;font-size:11px;color:rgba(120,150,190,0.45);cursor:pointer;letter-spacing:2px;transition:color 0.2s;}
-  .config-skip:hover{color:rgba(120,150,190,0.75);}
 </style>
 </head>
 <body>
@@ -107,23 +92,6 @@
 <button class="music-btn" id="musicBtn" onclick="toggleMusic()">♪</button>
 <div class="toast" id="toast"></div>
 
-<!-- EmailJS Setup Overlay -->
-<div class="config-overlay" id="configOverlay">
-  <div class="config-card">
-    <div class="config-title">✉ EmailJS 寄信設定</div>
-    <div class="config-step">
-      ① 前往 <a href="https://www.emailjs.com" target="_blank">emailjs.com</a> 免費註冊帳號<br>
-      ② Email Services → 新增服務，連結你的信箱 → 取得 <code>Service ID</code><br>
-      ③ Email Templates → 新建模板，加入變數 <code>{{message}}</code> → 取得 <code>Template ID</code><br>
-      ④ Account → General → API Keys → 複製 <code>Public Key</code>
-    </div>
-    <input class="config-input" id="cfgService"  placeholder="Service ID　例：service_abc1234">
-    <input class="config-input" id="cfgTemplate" placeholder="Template ID　例：template_xyz5678">
-    <input class="config-input" id="cfgPublic"   placeholder="Public Key　例：aBcDeFgHiJkLmNoPqR">
-    <button class="config-save" onclick="saveConfig()">儲存設定，開始投函 →</button>
-    <span class="config-skip" onclick="skipConfig()">稍後再設定，先看看網站</span>
-  </div>
-</div>
 
 <div class="site">
 
@@ -255,38 +223,8 @@
 })();
 
 /* ── EmailJS config ── */
-let EJ={service:'',template:'',pub:'',ready:false};
+const W3F_KEY = 'e1747bcb-595d-420f-9198-9407d2183fee';
 
-function loadSavedEJ(){
-  /* Pre-filled credentials */
-  const PRESET={s:'service_184javi',t:'template_qrrccg8',p:'B49osjGdr2Np1rubP'};
-  EJ={service:PRESET.s,template:PRESET.t,pub:PRESET.p,ready:true};
-  emailjs.init(PRESET.p);
-  document.getElementById('configOverlay').style.display='none';
-  try{
-    const c=JSON.parse(localStorage.getItem('ej')||'null');
-    if(c&&c.s&&c.t&&c.p){
-      EJ={service:c.s,template:c.t,pub:c.p,ready:true};
-      emailjs.init(c.p);
-    }
-  }catch(e){}
-}
-loadSavedEJ();
-
-function saveConfig(){
-  const s=document.getElementById('cfgService').value.trim();
-  const t=document.getElementById('cfgTemplate').value.trim();
-  const p=document.getElementById('cfgPublic').value.trim();
-  if(!s||!t||!p){showToast('請填寫全部三個欄位');return;}
-  EJ={service:s,template:t,pub:p,ready:true};
-  emailjs.init(p);
-  localStorage.setItem('ej',JSON.stringify({s,t,p}));
-  document.getElementById('configOverlay').style.display='none';
-  showToast('設定完成 ✉ 可以開始投函了');
-}
-function skipConfig(){
-  document.getElementById('configOverlay').style.display='none';
-}
 
 /* ── Views ── */
 function showView(id){
@@ -312,23 +250,29 @@ function showToast(msg,ms=3200){
 async function sendLetter(){
   const text=document.getElementById('letterContent').value.trim();
   if(!text){showToast('手紙に言葉を書いてください…');return;}
-  if(!EJ.ready){
-    document.getElementById('configOverlay').style.display='flex';
-    showToast('請先完成 EmailJS 設定');return;
-  }
+
   const btn=document.getElementById('sendBtn');
   btn.disabled=true;btn.textContent='送信中…';
 
   const d=new Date().toLocaleString('ja-JP',{year:'numeric',month:'long',day:'numeric',hour:'2-digit',minute:'2-digit'});
   try{
-    const resp = await emailjs.send(EJ.service, EJ.template, {
-      message: `差出人：匿名\n宛先：どこかへ\n投函日時：${d}\n\n――――――――――――\n\n${text}\n\n――――――――――――\n\nこの手紙は波に乗って届きました。`
+    const resp = await fetch('https://api.web3forms.com/submit', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json', 'Accept': 'application/json'},
+      body: JSON.stringify({
+        access_key: W3F_KEY,
+        subject: '【匿名の漂流手紙】',
+        from_name: '匿名の漂流郵便箱',
+        message: `差出人：匿名\n宛先：どこかへ\n投函日時：${d}\n\n――――――――――――\n\n${text}\n\n――――――――――――\n\nこの手紙は波に乗って届きました。`
+      })
     });
-    console.log('EmailJS OK:', resp.status, resp.text);
+    const result = await resp.json();
+    console.log('Web3Forms:', result);
+    if(!result.success) throw new Error(result.message || 'failed');
     showView('successView');
   }catch(err){
     console.error('EmailJS error:', err);
-    const detail = (err && err.text) ? err.text : (err && err.status ? 'status ' + err.status : String(err));
+    const detail = err && err.message ? err.message : String(err);
     showToast('送信失敗：' + detail, 6000);
     btn.disabled=false; btn.textContent='投函する ✉';
   }
